@@ -1,9 +1,11 @@
-pubmed_textclassification
+# pubmed_textclassification
+
 ==============================
 
 ETHZ Machine Learning for Healthcare Problem 2: classification of pubmed paper sentences or text into document sections.
 
-Project Organization
+## Project Organization
+
 ------------
 
     ├── LICENSE
@@ -50,7 +52,6 @@ Project Organization
     │       └── visualize.py
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
-
 
 --------
 
