@@ -47,19 +47,25 @@ def process_txt_data(txt_datadir:str or Path,
 
     return csv_paths
 
-def main(input_filepath, output_filepath, verbose=False, zip_file=False):
+def main(input_path, output_path, lowercase=False, process_zip_file=False, verbose=False):
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
     logger = logging.getLogger(__name__)
     logger.info('making final data set from raw data')
+    csv_paths = process_txt_data(txt_datadir=input_path,
+                                 out_dir=output_path,
+                                 lowercase=lowercase,
+                                 verbose=verbose)
+
+
 
 def get_parser():
     """
     get_parser - a helper function for the argparse module
     """
     parser = argparse.ArgumentParser(
-        description='Make a dataset from the raw data')
+        description='Make a dataset from the raw data',
     )
     parser.add_argument(
         "-i",
@@ -79,7 +85,7 @@ def get_parser():
     )
     parser.add_argument(
         '-z',
-        '--zip-file',
+        '--process-zip-file',
         required=False,
         default=False,
         action='store_true',
@@ -106,14 +112,11 @@ def get_parser():
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     logging.basicConfig(level=logging.INFO, format=log_fmt)
-    project_dir = Path(__file__).resolve().parents[2]
 
     args = get_parser().parse_args()
-    input_filepath = Path(args.input_path) if args.input_path else project_dir / 'data' /' raw'
-    output_filepath = Path(args.output_path) if args.output_path else project_dir / 'data' / 'interim'
+    input_dir = Path(args.input_path) if args.input_path else _root / 'data' /' raw'
+    output_dir = Path(args.output_path) if args.output_path else _root / 'data' / 'interim'
+    process_zip_file = args.process_zip_file
+    lowercase = args.lowercase
     verbose = args.verbose
-    main(input_filepath, output_filepath, verbose)
-    # not used in this stub but often useful for finding various files
-
-
-    main()
+    main(input_path=input_dir, output_path=output_dir, lowercase=lowercase, process_zip_file=process_zip_file, verbose=verbose)
