@@ -4,16 +4,18 @@ import logging
 from pathlib import Path
 from tqdm.auto import tqdm
 from cleantext import clean
-
+import sys
 import pandas as pd
-
+_src = Path(__file__).parent.parent
+_root = _src.parent
+sys.path.append(str(_root.resolve()))
 from src.utils import fix_punct_spaces
 
 _src = Path(__file__).parent.parent
 _root = _src.parent
 
 def process_txt_data(txt_datadir:str or Path,
-                     out_dir:str or Path=None,
+                     out_dir:str or Path,
                      lowercase=True,
                      verbose=False):
     """read each downloaded txt file into pandas, convert to a dataframe, and save as a CSV"""
@@ -38,7 +40,7 @@ def process_txt_data(txt_datadir:str or Path,
         df.reset_index(drop=True, inplace=True)
         df["description_cln"] = df["description"].apply(clean, lower=lowercase)
         df["description_cln"] = df["description_cln"].apply(fix_punct_spaces)
-        _csv_out_path = out_dir / txt_path.with_suffix('.csv')
+        _csv_out_path = out_dir / f"{txt_path.stem}.csv"
         df.to_csv(_csv_out_path, index=False)
         csv_paths.append(_csv_out_path)
 
@@ -57,6 +59,8 @@ def main(input_path, output_path, lowercase=False, process_zip_file=False, verbo
                                  out_dir=output_path,
                                  lowercase=lowercase,
                                  verbose=verbose)
+    if verbose:
+        print(f"processed and saved:\n\t{[f.name for f in csv_paths]} in directory {output_path}")
 
 
 
@@ -73,7 +77,7 @@ def get_parser():
         required=False,
         type=str,
         default=None,
-        help="The path to the input data"
+        help="The path to the input data directory. Defaults to root/data/raw"
     )
     parser.add_argument(
         "-o",
@@ -81,7 +85,7 @@ def get_parser():
         required=False,
         type=str,
         default=None,
-        help="The path to the output data"
+        help="The path to the output data directory. Defaults to root/data/interim"
     )
     parser.add_argument(
         '-z',
@@ -114,8 +118,11 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format=log_fmt)
 
     args = get_parser().parse_args()
-    input_dir = Path(args.input_path) if args.input_path else _root / 'data' /' raw'
+    logger = logging.info(f'parsed args: {args}')
+    input_dir = Path(args.input_path) if args.input_path else _root / 'data' / 'raw'
     output_dir = Path(args.output_path) if args.output_path else _root / 'data' / 'interim'
+    assert input_dir.exists(), f"input_dir {input_dir} does not exist"
+    assert output_dir.exists(), f"output_dir {output_dir} does not exist"
     process_zip_file = args.process_zip_file
     lowercase = args.lowercase
     verbose = args.verbose
