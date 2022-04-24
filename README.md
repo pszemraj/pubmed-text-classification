@@ -4,6 +4,11 @@
 
 ETHZ Machine Learning for Healthcare Problem 2: classification of pubmed paper sentences or text into document sections.
 
+by: Peter Szemraj & Lou Ancillon
+
+## Approach
+
+The pubmed_textclassification problem is a classification problem. The goal is to classify input text taken from a document into one of five classes:  background, objective; method, result; conclusion:
 ## Project Organization
 
 ------------
@@ -55,4 +60,6 @@ ETHZ Machine Learning for Healthcare Problem 2: classification of pubmed paper s
 
 --------
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+_Note:_ This project is hosted on the [cookiecutter data science project template](ttps://drivendata.github.io/cookiecutter-data-science/)
+
