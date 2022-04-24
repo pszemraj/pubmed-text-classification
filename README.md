@@ -1,4 +1,4 @@
-# pubmed_textclassification
+# PubMed Text Classification
 
 ==============================
 
@@ -69,3 +69,5 @@ Installion is completed through installing the packages listed in the `requireme
 --------
 
 _Note:_ This project is hosted on the [cookiecutter data science project template](ttps://drivendata.github.io/cookiecutter-data-science/)
+
+--------
