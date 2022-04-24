@@ -24,6 +24,9 @@ Installion is completed through installing the packages listed in the `requireme
 2. cd into the directory that you cloned
 3. run `pip install -r requirements.txt`
 
+### conda/mamba install
+
+Installation is also possible through conda/mamba. To do this, use the provided `environment.yml` file.
 ## Project Organization
 
 ------------
