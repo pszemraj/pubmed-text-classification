@@ -87,3 +87,13 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+
+# scratch files
+.scratch/
+*.scratch
+
+
+# ignore notebooks by default
+.ipynb_checkpoints/
+*notebooks/
