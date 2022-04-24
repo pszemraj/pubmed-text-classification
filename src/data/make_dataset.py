@@ -12,9 +12,6 @@ _root = _src.parent
 sys.path.append(str(_root.resolve()))
 from src.utils import fix_punct_spaces
 
-_src = Path(__file__).parent.parent
-_root = _src.parent
-
 
 def process_txt_data(
     txt_datadir: str or Path, out_dir: str or Path, lowercase=True, verbose=False
