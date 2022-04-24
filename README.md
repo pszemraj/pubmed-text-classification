@@ -26,7 +26,18 @@ Installion is completed through installing the packages listed in the `requireme
 
 ### conda/mamba install
 
-Installation is also possible through conda/mamba. To do this, use the provided `environment.yml` file.
+Installation is also possible through conda/mamba. To do this, use the provided `environment.yml` file. The file contains the following commands:
+
+```
+conda env create -f environment.yml
+```
+
+The environment.yml will create an environment called `ml4hc_p2`, to activate the environment, use the following command:
+
+```
+conda activate ml4hc_p2
+```
+
 ## Project Organization
 
 ------------
