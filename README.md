@@ -8,21 +8,32 @@ by: Peter Szemraj & Lou Ancillon
 
 ## Approach
 
-The pubmed_textclassification problem is a classification problem. The goal is to classify input text taken from a document into one of five classes:  background, objective; method, result; conclusion:
+The pubmed_textclassification problem is a classification problem. The goal is to classify input text taken from a document into one of five classes:  background, objective; method, result; conclusion.
+
+This is done through three different approaches:
+
+1. TF-IDF (Term Frequency - Inverse Document Frequency) to vectorize the input text.
+2. word2vec to vectorize the input text.
+3. transformer model training to implement a neural network, implicitly learning the word embeddings and classifying the input text.
+
+## Installing
+
+Installion is completed through installing the packages listed in the `requirements.txt` file.
+
+1. clone the repository
+2. cd into the directory that you cloned
+3. run `pip install -r requirements.txt`
+
 ## Project Organization
 
 ------------
 
     ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
     ├── data
-    │   ├── external       <- Data from third party sources.
     │   ├── interim        <- Intermediate data that has been transformed.
     │   ├── processed      <- The final, canonical data sets for modeling.
     │   └── raw            <- The original, immutable data dump.
-    │
-    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
     │
     ├── models             <- Trained and serialized models, model predictions, or model summaries
     │
@@ -38,7 +49,6 @@ The pubmed_textclassification problem is a classification problem. The goal is t
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
@@ -55,11 +65,7 @@ The pubmed_textclassification problem is a classification problem. The goal is t
     │   │
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
     │       └── visualize.py
-    │
-    └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
 
 --------
 
-
 _Note:_ This project is hosted on the [cookiecutter data science project template](ttps://drivendata.github.io/cookiecutter-data-science/)
-
