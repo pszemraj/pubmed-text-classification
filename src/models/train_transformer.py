@@ -118,7 +118,8 @@ def get_parser():
         help="Initial learning rate for the model.",
     )
     parser.add_argument(
-        "-sched" "--LR-schedule",
+        "-sched",
+        "--LR-schedule",
         type=str,
         default="reducelronplateau",
         help="Learning rate schedule for the model.",
@@ -167,7 +168,8 @@ def get_parser():
         help="Column name of the input text.",
     )
     parser.add_argument(
-        "-target" "--target-cls-colname",
+        "-target",
+        "--target-cls-colname",
         type=str,
         default="target",
         help="Column name of the target class.",
@@ -206,7 +208,7 @@ if __name__ == "__main__":
 
     num_epochs = args.num_epochs
     batch_size = args.batch_size
-    train_fp16 = args.train_fp16
+    train_fp16 = not args.no_fp16
     train_strategy = args.train_strategy
     LR_initial = args.LR_initial
     LR_schedule = args.LR_schedule
