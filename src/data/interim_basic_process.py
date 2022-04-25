@@ -31,7 +31,8 @@ if __name__ == "__main__":
 
     logging.info("starting running interim -> processed basic")
     _src = _root / "data" / "interim"
-    _out = _root / "data" / "processed"
+    _out = _root / "data" / "processed" / "basic_processed"
+    _out.mkdir(exist_ok=True)
     target_col = "description_cln"  # the column to be processed
     files = [f for f in _src.iterdir() if f.is_file() and f.suffix == ".csv"]
     print(len(files))
