@@ -9,22 +9,25 @@ import logging
 from pathlib import Path
 import sys
 import py7zr
+
 _src = Path(__file__).parent.parent
 _root = _src.parent
 _logs_dir = _root / "logs"
 _logs_dir.mkdir(exist_ok=True)
 sys.path.append(str(_root.resolve()))
 from src.utils import collapse_directory
+
 log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(
-        level=logging.INFO, format=log_fmt,filename=_logs_dir / "extract_7z.log")
+    level=logging.INFO, format=log_fmt, filename=_logs_dir / "extract_7z.log"
+)
+
+
 def get_parser():
     """
     get_parser - a helper function for the argparse module
     """
-    parser = argparse.ArgumentParser(
-        description="Extract 7z files from a directory"
-    )
+    parser = argparse.ArgumentParser(description="Extract 7z files from a directory")
     parser.add_argument(
         "-i",
         "--input-path",
@@ -41,12 +44,12 @@ def get_parser():
         help="path to the directory to extract the 7z files to. Defaults to the same directory as the input path in a subdirectory called 'extracted'",
     )
     parser.add_argument(
-        '-c',
-        '--collapse',
+        "-c",
+        "--collapse",
         required=False,
         default=False,
-        action='store_true',
-        help='if passed, will collapse the extracted files into a single directory (i.e. no subdirectories)',
+        action="store_true",
+        help="if passed, will collapse the extracted files into a single directory (i.e. no subdirectories)",
     )
     parser.add_argument(
         "-v",
@@ -56,20 +59,25 @@ def get_parser():
     )
     return parser
 
+
 if __name__ == "__main__":
 
     logging.info("Extracting 7z archive")
 
     args = get_parser().parse_args()
     input_path = Path(args.input_path)
-    assert input_path.exists() and input_path.suffix == ".7z", f"input path must be a 7z file, got {input_path}"
-    output_path = Path(args.output_path) if args.output_path else input_path.parent / "extracted"
+    assert (
+        input_path.exists() and input_path.suffix == ".7z"
+    ), f"input path must be a 7z file, got {input_path}"
+    output_path = (
+        Path(args.output_path) if args.output_path else input_path.parent / "extracted"
+    )
     output_path.mkdir(exist_ok=True)
     verbose = args.verbose
     collapse = args.collapse
     logging.info(f"input args: {args}")
 
-    with py7zr.SevenZipFile(input_path, 'r') as archive:
+    with py7zr.SevenZipFile(input_path, "r") as archive:
         archive.extractall(path=output_path)
     if collapse:
         collapse_directory(output_path)
