@@ -9,11 +9,8 @@ train_transformer.py - train a transformer model on the data to classify the tex
 
 import argparse
 import gc
-import json
 import logging
-import os
 import pprint as pp
-import re
 import shutil
 import sys
 from pathlib import Path
