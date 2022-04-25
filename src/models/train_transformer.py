@@ -98,8 +98,8 @@ def get_parser():
     )
     parser.add_argument(
         "--train-fp16",
-        type=bool,
         default=True,
+        action="store_true",
         help="Whether to train the model in FP16.",
     )
     parser.add_argument(
@@ -134,7 +134,6 @@ def get_parser():
     )
     parser.add_argument(
         "--verbose",
-        type=bool,
         default=False,
         action="store_true",
         help="Increase verbosity of logging.",
@@ -156,7 +155,6 @@ def get_parser():
         "--lowercased-text",
         default=False,
         action="store_true",
-        type=bool,
         help="Whether to lowercase the text.",
     )
     parser.add_argument(
@@ -251,7 +249,8 @@ if __name__ == "__main__":
     _metrics = load_metrics_train(num_classes=_nc, verbose=verbose)
 
     logger = get_tb_logger(
-        log_dir=_logs_dir, dataset=dataset, model_tag=hf_tag, verbose=verbose
+        log_dir=_logs_dir, dataset=dataset, TRAIN_STRATEGY=train_strategy,
+        model_tag=hf_tag, verbose=verbose
     )
     logger.log_hyperparams(session_params)
 
