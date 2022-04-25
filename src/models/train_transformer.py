@@ -23,6 +23,8 @@ import torch
 from flash.text import TextClassificationData, TextClassifier
 from torchmetrics import Accuracy, F1Score, MatthewsCorrCoef
 
+from src.utils import get_timestamp
+
 _src = Path(__file__).parent.parent
 _root = _src.parent
 _logs_dir = _root / "logs"
@@ -254,14 +256,6 @@ trainer = flash.Trainer(
 
 """# train"""
 
-# Commented out IPython magic to ensure Python compatibility.
-#@title tensorboard
-# Load the TensorBoard notebook extension
-# %load_ext tensorboard
-
-# Commented out IPython magic to ensure Python compatibility.
-# %tensorboard --logdir $log_dir
-
 """## train trainer"""
 
 logging.info(f"\t\tTRAINING:{hf_tag} ")
@@ -307,7 +301,6 @@ print(f"\nYtrue:\t{sample_ytrue}\nYpred:\t{predictions}")
 
 import pprint as pp
 
-import numpy
 
 final_metrics = trainer.logged_metrics
 output_metrics = {k:v.cpu().numpy().tolist() for k, v in final_metrics.items()}
