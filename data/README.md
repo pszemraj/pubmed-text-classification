@@ -16,4 +16,9 @@ The full pubmed dataset is quite large, and therefore we only extract a small su
 
 Extracting the .7z is possible as an argparse argument when running `src/data/make_dataset.py`. To extract the .7z files outside of that use case, `src\data\extract_7z_archive.py` can be used.
 
+## Which data to use
+
+What is what? The data is split into three subfolders as mentioned above. For training the transformer models, the data in `interim` is used for cased models, and the data in `processed/basic_processed` is used for uncased models (`bert-base-uncased`).
+
+
 ---
