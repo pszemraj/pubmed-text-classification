@@ -216,15 +216,19 @@ if __name__ == "__main__":
     use_knockknock = args.knockknock
     verbose = args.verbose
 
-    if not torch.cuda.is_available():
-        warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
-        logging.info("cuda not available, setting var TRAIN_FP16 to False.")
-        train_fp16 = False
+
 
     if train_strategy == "freeze_unfreeze":
         assert (
             num_epochs > unfreeze_epoch > 0
         ), f"required that NUM_EPOCHS > UNFREEZE_EPOCH > 0, found NUM_EPOCHS={num_epochs} and UNFREEZE_EPOCH={unfreeze_epoch}"
+    if not torch.cuda.is_available():
+            warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
+            logging.info("cuda not available, setting var TRAIN_FP16 to False.")
+            train_fp16 = False
+    if 'uncased' in hf_tag.lower():
+        warnings.warn(f"setting lowercased_text to True for {hf_tag}")
+        lowercased_text = True
 
     session_params = {
         "NUM_EPOCHS": num_epochs,
