@@ -31,6 +31,7 @@ from trf_text import (
     save_train_metadata,
     get_knockknock_notifier,
 )
+
 _src = Path(__file__).parent.parent
 _root = _src.parent
 _logs_dir = _root / "logs"
@@ -48,10 +49,10 @@ logging.basicConfig(
 
 try:
     from trf_text import get_knockknock_notifier
+
     kk_available = True
 except ImportError:
-    kk_available =  False
-
+    kk_available = False
 
 
 from src.utils import get_timestamp
@@ -226,17 +227,15 @@ if __name__ == "__main__":
     use_knockknock = args.knockknock
     verbose = args.verbose
 
-
-
     if train_strategy == "freeze_unfreeze":
         assert (
             num_epochs > unfreeze_epoch > 0
         ), f"required that NUM_EPOCHS > UNFREEZE_EPOCH > 0, found NUM_EPOCHS={num_epochs} and UNFREEZE_EPOCH={unfreeze_epoch}"
     if not torch.cuda.is_available():
-            warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
-            logging.info("cuda not available, setting var TRAIN_FP16 to False.")
-            train_fp16 = False
-    if 'uncased' in hf_tag.lower():
+        warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
+        logging.info("cuda not available, setting var TRAIN_FP16 to False.")
+        train_fp16 = False
+    if "uncased" in hf_tag.lower():
         warnings.warn(f"setting lowercased_text to True for {hf_tag}")
         lowercased_text = True
 

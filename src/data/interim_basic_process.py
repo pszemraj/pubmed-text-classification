@@ -1,4 +1,3 @@
-
 """
     interim_basic_process.py - a super barebones script to process the interim data into processed data. The majority of cleaning work has been done in the src\data\make_dataset.py script.
 
@@ -23,18 +22,18 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-def lower_text(text:str):
-    return text.lower()
 
+def lower_text(text: str):
+    return text.lower()
 
 
 if __name__ == "__main__":
 
     logging.info("starting running interim -> processed basic")
-    _src = _root / 'data' / 'interim'
-    _out = _root / 'data' / 'processed'
-    target_col = 'description_cln' # the column to be processed
-    files = [f for f in _src.iterdir() if f.is_file() and f.suffix == '.csv']
+    _src = _root / "data" / "interim"
+    _out = _root / "data" / "processed"
+    target_col = "description_cln"  # the column to be processed
+    files = [f for f in _src.iterdir() if f.is_file() and f.suffix == ".csv"]
     print(len(files))
 
     for f in tqdm(files, total=len(files)):
