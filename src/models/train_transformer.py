@@ -21,7 +21,6 @@ import pandas as pd
 import torch
 from flash.text import TextClassificationData, TextClassifier
 from pytorch_lightning import seed_everything
-from src.models.trf_text import get_knockknock_notifier
 
 from trf_text import (
     get_LR_scheduler_config,
@@ -30,6 +29,7 @@ from trf_text import (
     get_training_callbacks,
     load_metrics_train,
     save_train_metadata,
+    get_knockknock_notifier,
 )
 
 _src = Path(__file__).parent.parent
