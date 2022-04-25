@@ -136,6 +136,7 @@ def get_parser():
         "--verbose",
         type=bool,
         default=False,
+        action="store_true",
         help="Increase verbosity of logging.",
     )
     parser.add_argument(
@@ -147,8 +148,16 @@ def get_parser():
     parser.add_argument(
         "--dataset",
         type=str,
-        default="pubmed_full",
-        help="Dataset to train the model on.",
+        default="pubmed_20k",
+        help="Dataset to train the model on. Options are: pubmed_full and pubmed_20k",
+    )
+    parser.add_argument(
+        "-lc",
+        "--lowercased-text",
+        default=False,
+        action="store_true",
+        type=bool,
+        help="Whether to lowercase the text.",
     )
     parser.add_argument(
         "--input-text-colname",
@@ -173,6 +182,7 @@ if __name__ == "__main__":
     args = get_parser().parse_args()
     logging.info(f"args: {pp.pformat(args)}")
     dataset = args.dataset
+    lowercased_text = args.lowercased_text
     input_text_colname = args.input_text_colname
     target_cls_colname = args.target_cls_colname
     max_len = args.max_len  # max length of the input text (for BERT / XLNet / others)
@@ -211,13 +221,19 @@ if __name__ == "__main__":
         "UNFREEZE_EPOCH": unfreeze_epoch,
         "hf_tag": hf_tag,
         "dataset": dataset,
+        "lowercased_text": lowercased_text,
         "input_text_colname": input_text_colname,
         "target_cls_colname": target_cls_colname,
         "verbose": verbose,
     }
     logging.info(f"\n\nParameters for a new session:\n\t{pp.pformat(session_params)}")
-
-    datafile_mapping = get_pubmed_filenames(dataset, _root)
+    # load data from appropriate dataset depending on 'lowercased_text'
+    src_data_dir = (
+        _root / "data" / "processed" if lowercased_text else _root / "data" / "interim"
+    )
+    datafile_mapping = get_pubmed_filenames(
+        data_dir=src_data_dir, dataset=dataset, verbose=verbose
+    )
 
     datamodule = TextClassificationData.from_csv(
         input_field=input_text_colname,
