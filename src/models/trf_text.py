@@ -2,16 +2,13 @@ import json
 import os
 from pathlib import Path
 
+import torch
 from knockknock import telegram_sender
-from torchmetrics import Accuracy, F1Score, MatthewsCorrCoef
+from pytorch_lightning.callbacks import (EarlyStopping, GPUStatsMonitor,
+                                         LearningRateMonitor,
+                                         StochasticWeightAveraging)
 from pytorch_lightning.loggers import TensorBoardLogger
-
-from pytorch_lightning.callbacks import (
-    EarlyStopping,
-    GPUStatsMonitor,
-    LearningRateMonitor,
-    StochasticWeightAveraging,
-)
+from torchmetrics import Accuracy, F1Score, MatthewsCorrCoef
 
 
 def get_training_callbacks(monitor_metric="val_f1score", min_delta=0.003, patience=3):
@@ -29,7 +26,6 @@ def get_training_callbacks(monitor_metric="val_f1score", min_delta=0.003, patien
     _callbacks = [
         StochasticWeightAveraging(),
         LearningRateMonitor(),
-        GPUStatsMonitor(),
         EarlyStopping(
             monitor=monitor_metric,
             mode="max",
@@ -37,6 +33,8 @@ def get_training_callbacks(monitor_metric="val_f1score", min_delta=0.003, patien
             patience=patience,
         ),
     ]
+    if torch.cuda.is_available():
+        _callbacks.append(GPUStatsMonitor())
     return _callbacks
 
 
