@@ -8,6 +8,7 @@ import sys
 import pandas as pd
 import py7zr
 import shutil
+
 _src = Path(__file__).parent.parent
 _root = _src.parent
 sys.path.append(str(_root.resolve()))
@@ -63,11 +64,13 @@ def main(
     input_path = Path(input_path)
     output_path = Path(output_path)
     if process_zip_file:
-        zipfiles = [f for f in input_path.iterdir() if f.is_file() and f.suffix == ".7z"]
+        zipfiles = [
+            f for f in input_path.iterdir() if f.is_file() and f.suffix == ".7z"
+        ]
         logger.info(f"extracting zip files.. found {len(zipfiles)} zip files")
         temp_dir = input_path / "temp_7z_dir"
         for f in tqdm(zipfiles, total=len(zipfiles)):
-            with py7zr.SevenZipFile(f, 'r') as z:
+            with py7zr.SevenZipFile(f, "r") as z:
                 z.extractall(path=temp_dir)
         collapse_directory(temp_dir)
     # extract standard txt files
@@ -155,8 +158,9 @@ def get_parser():
 
 if __name__ == "__main__":
     log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    logging.basicConfig(level=logging.INFO, format=log_fmt,
-                        filename=_root / 'logs' / 'make_dataset.log')
+    logging.basicConfig(
+        level=logging.INFO, format=log_fmt, filename=_root / "logs" / "make_dataset.log"
+    )
 
     args = get_parser().parse_args()
     logger = logging.info(f"parsed args: {args}")
@@ -170,9 +174,9 @@ if __name__ == "__main__":
     lowercase = args.lowercase
     verbose = args.verbose
     _ = main(
-            input_path=input_dir,
-            output_path=output_dir,
-            lowercase=lowercase,
-            process_zip_file=process_zip_file,
-            verbose=verbose,
-        )
+        input_path=input_dir,
+        output_path=output_dir,
+        lowercase=lowercase,
+        process_zip_file=process_zip_file,
+        verbose=verbose,
+    )
