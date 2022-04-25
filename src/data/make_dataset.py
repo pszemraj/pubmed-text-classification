@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
+"""
+    make_dataset.py - processes the txt files in the input directory and saves them to the output directory as csv files. This script should be run on data in the 'raw' directory.
+
+"""
 import argparse
 import logging
-from pathlib import Path
-from tqdm.auto import tqdm
-from cleantext import clean
+import shutil
 import sys
+from pathlib import Path
+
 import pandas as pd
 import py7zr
-import shutil
+from cleantext import clean
+from tqdm.auto import tqdm
 
 _src = Path(__file__).parent.parent
 _root = _src.parent
@@ -20,7 +25,18 @@ from src.utils import collapse_directory, fix_punct_spaces
 def process_txt_data(
     txt_datadir: str or Path, out_dir: str or Path, lowercase=True, verbose=False
 ):
-    """read each downloaded txt file into pandas, convert to a dataframe, and save as a CSV"""
+    """
+    process_txt_data - processes the txt files in the input directory and saves them to the output directory as csv files
+
+    Args:
+        txt_datadir (str or Path): the path to the directory containing the txt files
+        out_dir (str or Path): the path to the directory to save the csv files
+        lowercase (bool, optional): Defaults to True. If passed, will lowercase the input text
+        verbose (bool, optional): Defaults to False. If passed, will print out the paths to the output files
+
+    Returns:
+        list: a list of the paths to the output csv files
+    """
     txt_datadir = Path(txt_datadir)
     out_dir = Path(out_dir) if out_dir is not None else txt_datadir / "processed"
     out_dir.mkdir(exist_ok=True)
@@ -58,11 +74,21 @@ def process_txt_data(
 def main(
     input_path, output_path, lowercase=False, process_zip_file=False, verbose=False
 ):
-    """Runs data processing scripts to turn raw data from (../raw) into
-    cleaned data ready to be analyzed (saved in ../processed).
+    """
+    main - the main function for the script
+
+    Args:
+        input_path (str or Path): the path to the input data directory
+        output_path (str or Path): the path to the output data directory
+        lowercase (bool, optional): Defaults to False. If passed, will lowercase the input text
+        process_zip_file (bool, optional): Defaults to False. If passed, will also parse the zip files in the input path
+        verbose (bool, optional): Defaults to False. If passed, will print out the paths to the output files
+
+    Returns:
+        list: a list of the paths to the output csv files
     """
     logger = logging.getLogger(__name__)
-    logger.info("making final data set from raw data")
+    logger.info("making data set from raw data")
     input_path = Path(input_path)
     output_path = Path(output_path)
     if process_zip_file:
