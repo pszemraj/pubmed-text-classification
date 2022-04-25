@@ -4,9 +4,7 @@ train_transformer.py - train a transformer model on the data to classify the tex
 
 - docs: https://lightning-flash.readthedocs.io/en/stable/reference/text_classification.html
 - base model: https://huggingface.co/bert-base-uncased
-
-Original file is located at
-    https://colab.research.google.com/drive/1Pss62i0H4H8I-wq8wUAoYKRvEJXIuf4e
+- a copy of the original training notebook can be found at https://gist.github.com/pszemraj/746db81efea08cc25305a04f86ec8a65
 """
 
 import argparse
@@ -19,6 +17,7 @@ import re
 import shutil
 import sys
 from pathlib import Path
+import warnings
 
 import flash
 import pandas as pd
@@ -79,6 +78,91 @@ def get_parser():
     parser = argparse.ArgumentParser(
         description="Train a transformer model on the data to classify the text."
     )
+    parser.add_argument(
+        "--num-epochs",
+        type=int,
+        default=12,
+        help="Number of epochs to train the model for.",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=32,
+        help="Batch size for training the model.",
+    )
+    parser.add_argument(
+        "--max-len",
+        type=int,
+        default=256,
+        help="Maximum length of the input text.",
+    )
+    parser.add_argument(
+        "--train-fp16",
+        type=bool,
+        default=True,
+        help="Whether to train the model in FP16.",
+    )
+    parser.add_argument(
+        "--train-strategy",
+        type=str,
+        default="freeze",
+        help="Training strategy for the model. Can be any of freeze, freeze_unfreeze, no_freeze, full_train"
+    )
+    parser.add_argument(
+        "--LR-initial",
+        type=float,
+        default=1e-4,
+        help="Initial learning rate for the model.",
+    )
+    parser.add_argument(
+        "--LR-schedule",
+        type=str,
+        default="reducelronplateau",
+        help="Learning rate schedule for the model.",
+    )
+    parser.add_argument(
+        "--weight-decay",
+        type=float,
+        default=0.05,
+        help="Weight decay for the model.",
+    )
+    parser.add_argument(
+        "--unfreeze-epoch",
+        type=int,
+        default=4,
+        help="Epoch to unfreeze the model IF using the 'freeze_unfreeze' strategy.",
+    )
+    parser.add_argument(
+        "--verbose",
+        type=bool,
+        default=False,
+        help="Increase verbosity of logging.",
+    )
+    parser.add_argument(
+        "--hf-tag",
+        type=str,
+        default="distilbert-base-uncased",
+        help="Huggingface model tag (see https://huggingface.co/models). BERT is bert-base-uncased.",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="pubmed_full",
+        help="Dataset to train the model on.",
+    )
+    parser.add_argument(
+        "--input-text-colname",
+        type=str,
+        default="description_cln",
+        help="Column name of the input text.",
+    )
+    parser.add_argument(
+        "--target-cls-colname",
+        type=str,
+        default="target",
+        help="Column name of the target class.",
+    )
+    return parser
 
 
 if __name__ == "__main__":
@@ -87,53 +171,55 @@ if __name__ == "__main__":
     seed_everything(42, workers=True)
 
     args = get_parser().parse_args()
+    logging.info(f"args: {pp.pformat(args)}")
+    dataset = args.dataset
+    input_text_colname = args.input_text_colname
+    target_cls_colname = args.target_cls_colname
+    max_len = args.max_len # max length of the input text (for BERT / XLNet / others)
 
-    NUM_EPOCHS = 12  # @param {type:"integer"}
-    BATCH_SIZE = 32  # @param {type:"integer"}
-    MAX_LEN = 256  # @param ["128", "256", "512", "1024"] {type:"raw"}
-    TRAIN_FP16 = True  # @param {type:"boolean"}
-    TRAIN_STRATEGY = (
-        "no_freeze"  # @param ["freeze", "freeze_unfreeze", "no_freeze", "full_train"]
-    )
-    LR_INITIAL = 1e-4  # @param {type:"number"}
-    LR_SCHEDULE = "reducelronplateau"  # @param ["constantlr", "reducelronplateau"]
-    WEIGHT_DECAY = 0.05  # @param ["0", "0.01", "0.05", "0.1"] {type:"raw"}
+    hf_tag = args.hf_tag
 
-    UNFREEZE_EPOCH = 4  # @param {type:"integer"}
-    VERBOSE = False  # @param {type:"boolean"}
-    hf_tag = "bert-base-uncased"  # @param ["bert-base-uncased", "bert-large-uncased", "bert-base-cased", "bert-large-cased"]
-    dataset = "pubmed_full"
-    input_text_colname = "description_cln"
-    target_cls_colname = "target"
+    num_epochs = args.num_epochs
+    batch_size = args.batch_size
+    train_fp16 = args.train_fp16
+    train_strategy =args.train_strategy
+    LR_initial = args.LR_initial
+    LR_schedule = args.LR_schedule
+    weight_decay = args.weight_decay
+    unfreeze_epoch = args.unfreeze_epoch
+    verbose = args.verbose
+
+
     if not torch.cuda.is_available():
-        print("cuda not available, setting var TRAIN_FP16 to False.")
-        TRAIN_FP16 = False
+        warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
+        logging.info("cuda not available, setting var TRAIN_FP16 to False.")
+        train_fp16 = False
 
-    if TRAIN_STRATEGY == "freeze_unfreeze":
+    if train_strategy == "freeze_unfreeze":
         assert (
-            NUM_EPOCHS > UNFREEZE_EPOCH > 0
-        ), "configure params such that NUM_EPOCHS > UNFREEZE_EPOCH > 0"
+            num_epochs > unfreeze_epoch > 0
+        ), f"required that NUM_EPOCHS > UNFREEZE_EPOCH > 0, found NUM_EPOCHS={num_epochs} and UNFREEZE_EPOCH={unfreeze_epoch}"
 
     session_params = {
-        "NUM_EPOCHS": NUM_EPOCHS,
-        "BATCH_SIZE": BATCH_SIZE,
-        "MAX_INPUT_LENGTH": MAX_LEN,
-        "TRAIN_FP16": TRAIN_FP16,
-        "TRAIN_STRATEGY": TRAIN_STRATEGY,
-        "LR_SCHEDULE": LR_SCHEDULE,
-        "LR_INITIAL": LR_INITIAL,
-        "WEIGHT_DECAY": WEIGHT_DECAY,
-        "UNFREEZE_EPOCH": UNFREEZE_EPOCH,
+        "NUM_EPOCHS": num_epochs,
+        "BATCH_SIZE": batch_size,
+        "MAX_INPUT_LENGTH": max_len,
+        "TRAIN_FP16": train_fp16,
+        "TRAIN_STRATEGY": train_strategy,
+        "LR_SCHEDULE": LR_schedule,
+        "LR_INITIAL": LR_initial,
+        "WEIGHT_DECAY": weight_decay,
+        "UNFREEZE_EPOCH": unfreeze_epoch,
         "hf_tag": hf_tag,
+        "dataset": dataset,
+        "input_text_colname": input_text_colname,
+        "target_cls_colname": target_cls_colname,
+        "verbose": verbose,
     }
-    logging.info(f"\n\nParameters for a new session:\n\t{session_params}")
+    logging.info(f"\n\nParameters for a new session:\n\t{pp.pformat(session_params)}")
 
-    session_params["dataset"] = dataset  # log
 
     datafile_mapping = get_pubmed_filenames(dataset, _root)
-
-    session_params["input_text_colname"] = input_text_colname
-    session_params["target_cls_colname"] = target_cls_colname
 
     datamodule = TextClassificationData.from_csv(
         input_field=input_text_colname,
@@ -141,19 +227,18 @@ if __name__ == "__main__":
         train_file=datafile_mapping["train"],
         val_file=datafile_mapping["val"],
         test_file=datafile_mapping["test"],
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
     )
 
     _nc = datamodule.num_classes  # alias
     logging.info(f"found number of classes as {_nc}")
     session_params["num_classes"] = _nc
 
-    _metrics = load_metrics_train(num_classes=_nc, verbose=VERBOSE)
+    _metrics = load_metrics_train(num_classes=_nc, verbose=verbose)
 
     logger = get_tb_logger(
-        log_dir=_logs_dir, dataset=dataset, model_tag=hf_tag, verbose=VERBOSE
+        log_dir=_logs_dir, dataset=dataset, model_tag=hf_tag, verbose=verbose
     )
-
     logger.log_hyperparams(session_params)
 
     lr_scheduler_config = get_LR_scheduler_config()
@@ -161,35 +246,35 @@ if __name__ == "__main__":
     logging.info(f"Loading model: {hf_tag} for training on text classification")
     model = TextClassifier(
         backbone=hf_tag,
-        max_length=MAX_LEN,
+        max_length=max_len,
         labels=datamodule.labels,
         metrics=_metrics,
-        learning_rate=LR_INITIAL,
-        optimizer=("Adam", {"amsgrad": True, "weight_decay": WEIGHT_DECAY}),
+        learning_rate=LR_initial,
+        optimizer=("Adam", {"amsgrad": True, "weight_decay": weight_decay}),
         lr_scheduler=(
             "reducelronplateau",
             {"mode": "max"},
             lr_scheduler_config,
         ),
     )
-    model.hparams.batch_size = BATCH_SIZE
+    model.hparams.batch_size = batch_size
     model.configure_optimizers()
 
     trainer = flash.Trainer(
-        max_epochs=NUM_EPOCHS,
+        max_epochs=num_epochs,
         gpus=torch.cuda.device_count(),
         auto_lr_find=True,
         auto_scale_batch_size=True,
-        precision=16 if TRAIN_FP16 else 32,
+        precision=16 if train_fp16 else 32,
         callbacks=get_training_callbacks(
             monitor_metric="val_f1score", min_delta=0.003, patience=2
         ),
         logger=logger,
     )
 
-    logging.info(f"\t\tTRAINING:{hf_tag} ")
+    logging.info(f"starting training of model {hf_tag}")
 
-    if TRAIN_STRATEGY == "full_train":
+    if train_strategy == "full_train":
         trainer.fit(
             model,
             datamodule=datamodule,
@@ -198,9 +283,9 @@ if __name__ == "__main__":
         trainer.finetune(
             model,
             datamodule=datamodule,
-            strategy=("freeze_unfreeze", UNFREEZE_EPOCH)
-            if TRAIN_STRATEGY == "freeze_unfreeze"
-            else TRAIN_STRATEGY,  # 'freeze_unfreeze' is a special case
+            strategy=("freeze_unfreeze", unfreeze_epoch)
+            if train_strategy == "freeze_unfreeze"
+            else train_strategy,  # 'freeze_unfreeze' is a special case
         )
 
     trainer.test(
@@ -219,7 +304,7 @@ if __name__ == "__main__":
 
     gc.collect()
     # save model
-    out_dir = _root / "model-checkpoints"
+    out_dir = _root / "models"
     out_dir.mkdir(exist_ok=True)
     m_name = hf_tag.split("/")[-1]
     session_dir = out_dir / f"{dataset}={m_name}_{get_timestamp()}"
