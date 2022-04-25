@@ -259,7 +259,9 @@ if __name__ == "__main__":
     logging.info(f"\n\nParameters for a new session:\n\t{pp.pformat(session_params)}")
     # load data from appropriate dataset depending on 'lowercased_text'
     src_data_dir = (
-        _root / "data" / "processed" / "basic_processed" if lowercased_text else _root / "data" / "interim"
+        _root / "data" / "processed" / "basic_processed"
+        if lowercased_text
+        else _root / "data" / "interim"
     )
     datafile_mapping = get_pubmed_filenames(
         data_dir=src_data_dir, dataset=dataset, verbose=verbose
