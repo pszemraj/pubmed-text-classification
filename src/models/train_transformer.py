@@ -32,6 +32,12 @@ from trf_text import (
     get_knockknock_notifier,
 )
 
+try:
+    from trf_text import get_knockknock_notifier
+    kk_available = True
+except ImportError:
+    kk_available =  False
+
 _src = Path(__file__).parent.parent
 _root = _src.parent
 _logs_dir = _root / "logs"
@@ -314,7 +320,7 @@ if __name__ == "__main__":
     )
 
     logging.info(f"starting training of model {hf_tag}")
-    if use_knockknock:
+    if use_knockknock and kk_available:
         logging.info("using knockknock to notify when training is complete")
         train_with_knockknock = get_knockknock_notifier(
             trainer=trainer,
