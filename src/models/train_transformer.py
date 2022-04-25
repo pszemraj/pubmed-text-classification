@@ -249,8 +249,11 @@ if __name__ == "__main__":
     _metrics = load_metrics_train(num_classes=_nc, verbose=verbose)
 
     logger = get_tb_logger(
-        log_dir=_logs_dir, dataset=dataset, TRAIN_STRATEGY=train_strategy,
-        model_tag=hf_tag, verbose=verbose
+        log_dir=_logs_dir,
+        dataset=dataset,
+        TRAIN_STRATEGY=train_strategy,
+        model_tag=hf_tag,
+        verbose=verbose,
     )
     logger.log_hyperparams(session_params)
 

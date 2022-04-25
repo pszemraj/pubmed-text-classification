@@ -4,9 +4,12 @@ from pathlib import Path
 
 import torch
 from knockknock import telegram_sender
-from pytorch_lightning.callbacks import (EarlyStopping, GPUStatsMonitor,
-                                         LearningRateMonitor,
-                                         StochasticWeightAveraging)
+from pytorch_lightning.callbacks import (
+    EarlyStopping,
+    GPUStatsMonitor,
+    LearningRateMonitor,
+    StochasticWeightAveraging,
+)
 from pytorch_lightning.loggers import TensorBoardLogger
 from torchmetrics import Accuracy, F1Score, MatthewsCorrCoef
 
