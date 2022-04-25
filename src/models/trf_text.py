@@ -160,7 +160,7 @@ def get_knockknock_notifier(
     datamodule,
     model,
     train_strategy: str = "freeze",
-    UNFREEZE_EPOCH: int = 1,
+    unfreeze_epoch: int = 1,
     api_key: str = "KNOCK_TELEGRAM_API",
     chat_id: str = "KNOCK_TELEGRAM_CHAT",
 ):
@@ -195,7 +195,7 @@ def get_knockknock_notifier(
             trainer.finetune(
                 model,
                 datamodule=datamodule,
-                strategy=("freeze_unfreeze", UNFREEZE_EPOCH)
+                strategy=("freeze_unfreeze", unfreeze_epoch)
                 if train_strategy == "freeze_unfreeze"
                 else train_strategy,
                 # 'freeze_unfreeze' is a special case

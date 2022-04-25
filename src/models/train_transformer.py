@@ -24,6 +24,7 @@ import pandas as pd
 import torch
 from flash.text import TextClassificationData, TextClassifier
 from pytorch_lightning import seed_everything
+from src.models.trf_text import get_knockknock_notifier
 
 from trf_text import (
     get_LR_scheduler_config,
@@ -132,12 +133,7 @@ def get_parser():
         default=4,
         help="Epoch to unfreeze the model IF using the 'freeze_unfreeze' strategy.",
     )
-    parser.add_argument(
-        "--verbose",
-        default=False,
-        action="store_true",
-        help="Increase verbosity of logging.",
-    )
+
     parser.add_argument(
         "--hf-tag",
         type=str,
@@ -169,6 +165,19 @@ def get_parser():
         default="target",
         help="Column name of the target class.",
     )
+    parser.add_argument(
+        "-kk",
+        "--knockknock",
+        default=False,
+        action="store_true",
+        help="whether to use knockknock to notify when training completed (note: requires knockknock package and environment vars",
+    )
+    parser.add_argument(
+        "--verbose",
+        default=False,
+        action="store_true",
+        help="Increase verbosity of logging.",
+    )
     return parser
 
 
@@ -195,6 +204,8 @@ if __name__ == "__main__":
     LR_schedule = args.LR_schedule
     weight_decay = args.weight_decay
     unfreeze_epoch = args.unfreeze_epoch
+
+    use_knockknock = args.knockknock
     verbose = args.verbose
 
     if not torch.cuda.is_available():
@@ -289,26 +300,40 @@ if __name__ == "__main__":
     )
 
     logging.info(f"starting training of model {hf_tag}")
-
-    if train_strategy == "full_train":
-        trainer.fit(
-            model,
+    if use_knockknock:
+        logging.info("using knockknock to notify when training is complete")
+        train_with_knockknock = get_knockknock_notifier(
+            trainer=trainer,
             datamodule=datamodule,
+            model=model,
+            train_strategy=train_strategy,
+            unfreeze_epoch=unfreeze_epoch,
         )
+
+        eval_results = train_with_knockknock()
     else:
-        trainer.finetune(
-            model,
+        logging.info("standard PL training")
+        if train_strategy == "full_train":
+            trainer.fit(
+                model,
+                datamodule=datamodule,
+            )
+        else:
+            trainer.finetune(
+                model,
+                datamodule=datamodule,
+                strategy=("freeze_unfreeze", unfreeze_epoch)
+                if train_strategy == "freeze_unfreeze"
+                else train_strategy,  # 'freeze_unfreeze' is a special case
+            )
+
+        eval_results = trainer.test(
+            verbose=False,
             datamodule=datamodule,
-            strategy=("freeze_unfreeze", unfreeze_epoch)
-            if train_strategy == "freeze_unfreeze"
-            else train_strategy,  # 'freeze_unfreeze' is a special case
         )
-
-    trainer.test(
-        verbose=False,
-        datamodule=datamodule,
+    logging.info(
+        f"finished training of model {hf_tag} and evaluation results: {pp.pformat(eval_results)}"
     )
-
     predict_test_example()  # illustrate how to use predict() and what the results look like
 
     final_metrics = trainer.logged_metrics
