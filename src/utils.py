@@ -1,8 +1,15 @@
+import os
 import re
 import shutil
+from datetime import datetime
 from pathlib import Path
 
 from cleantext import clean
+
+
+def get_timestamp():
+    """get_timestamp - returns a timestamp in the format YYYY-MM-DD-HH-MM-SS"""
+    return datetime.now().strftime("%b-%d-%Y_t-%H")
 
 
 def fix_parathesis(text: str, re_str=r"(?<=[([]) +| +(?=[)\]])"):
