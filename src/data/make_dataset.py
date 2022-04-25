@@ -11,6 +11,8 @@ import shutil
 
 _src = Path(__file__).parent.parent
 _root = _src.parent
+_logs_dir = _root / "logs"
+_logs_dir.mkdir(exist_ok=True)
 sys.path.append(str(_root.resolve()))
 from src.utils import collapse_directory, fix_punct_spaces
 
@@ -159,7 +161,7 @@ def get_parser():
 if __name__ == "__main__":
     log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     logging.basicConfig(
-        level=logging.INFO, format=log_fmt, filename=_root / "logs" / "make_dataset.log"
+        level=logging.INFO, format=log_fmt, filename=_logs_dir / "make_dataset.log"
     )
 
     args = get_parser().parse_args()
