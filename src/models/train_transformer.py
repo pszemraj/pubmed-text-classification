@@ -77,54 +77,61 @@ def get_parser():
         description="Train a transformer model on the data to classify the text."
     )
     parser.add_argument(
+        "-e",
         "--num-epochs",
         type=int,
         default=12,
         help="Number of epochs to train the model for.",
     )
     parser.add_argument(
+        "-b",
         "--batch-size",
         type=int,
         default=32,
         help="Batch size for training the model.",
     )
     parser.add_argument(
+        "-ml",
         "--max-len",
         type=int,
         default=256,
         help="Maximum length of the input text.",
     )
     parser.add_argument(
-        "--train-fp16",
+        "--no-fp16",
         default=True,
-        action="store_true",
+        action="store_false",
         help="Whether to train the model in FP16.",
     )
     parser.add_argument(
+        "-s",
         "--train-strategy",
         type=str,
         default="freeze",
         help="Training strategy for the model. Can be any of freeze, freeze_unfreeze, no_freeze, full_train",
     )
     parser.add_argument(
+        "-lr",
         "--LR-initial",
         type=float,
         default=1e-4,
         help="Initial learning rate for the model.",
     )
     parser.add_argument(
-        "--LR-schedule",
+        "-sched" "--LR-schedule",
         type=str,
         default="reducelronplateau",
         help="Learning rate schedule for the model.",
     )
     parser.add_argument(
+        "-wd",
         "--weight-decay",
         type=float,
         default=0.05,
         help="Weight decay for the model.",
     )
     parser.add_argument(
+        "-e-uf",
         "--unfreeze-epoch",
         type=int,
         default=4,
@@ -132,12 +139,14 @@ def get_parser():
     )
 
     parser.add_argument(
+        "-m",
         "--hf-tag",
         type=str,
         default="distilbert-base-uncased",
         help="Huggingface model tag (see https://huggingface.co/models). BERT is bert-base-uncased.",
     )
     parser.add_argument(
+        "-d",
         "--dataset",
         type=str,
         default="pubmed_20k",
@@ -151,13 +160,14 @@ def get_parser():
         help="Whether to lowercase the text.",
     )
     parser.add_argument(
+        "-in-text",
         "--input-text-colname",
         type=str,
         default="description_cln",
         help="Column name of the input text.",
     )
     parser.add_argument(
-        "--target-cls-colname",
+        "-target" "--target-cls-colname",
         type=str,
         default="target",
         help="Column name of the target class.",
@@ -170,6 +180,7 @@ def get_parser():
         help="whether to use knockknock to notify when training completed (note: requires knockknock package and environment vars",
     )
     parser.add_argument(
+        "-v",
         "--verbose",
         default=False,
         action="store_true",
@@ -205,15 +216,19 @@ if __name__ == "__main__":
     use_knockknock = args.knockknock
     verbose = args.verbose
 
-    if not torch.cuda.is_available():
-        warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
-        logging.info("cuda not available, setting var TRAIN_FP16 to False.")
-        train_fp16 = False
+
 
     if train_strategy == "freeze_unfreeze":
         assert (
             num_epochs > unfreeze_epoch > 0
         ), f"required that NUM_EPOCHS > UNFREEZE_EPOCH > 0, found NUM_EPOCHS={num_epochs} and UNFREEZE_EPOCH={unfreeze_epoch}"
+    if not torch.cuda.is_available():
+            warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
+            logging.info("cuda not available, setting var TRAIN_FP16 to False.")
+            train_fp16 = False
+    if 'uncased' in hf_tag.lower():
+        warnings.warn(f"setting lowercased_text to True for {hf_tag}")
+        lowercased_text = True
 
     session_params = {
         "NUM_EPOCHS": num_epochs,
