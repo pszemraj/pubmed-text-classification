@@ -38,8 +38,6 @@ _logs_dir = _root / "logs"
 _logs_dir.mkdir(exist_ok=True)
 sys.path.append(str(_root.resolve()))
 
-from src.utils import get_timestamp
-
 logfile_path = _logs_dir / "train_transformer.log"
 logging.basicConfig(
     filename=logfile_path,
@@ -47,6 +45,17 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
 )
+
+
+try:
+    from trf_text import get_knockknock_notifier
+
+    kk_available = True
+except ImportError:
+    kk_available = False
+
+
+from src.utils import get_timestamp
 
 
 def predict_test_example():
@@ -218,17 +227,15 @@ if __name__ == "__main__":
     use_knockknock = args.knockknock
     verbose = args.verbose
 
-
-
     if train_strategy == "freeze_unfreeze":
         assert (
             num_epochs > unfreeze_epoch > 0
         ), f"required that NUM_EPOCHS > UNFREEZE_EPOCH > 0, found NUM_EPOCHS={num_epochs} and UNFREEZE_EPOCH={unfreeze_epoch}"
     if not torch.cuda.is_available():
-            warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
-            logging.info("cuda not available, setting var TRAIN_FP16 to False.")
-            train_fp16 = False
-    if 'uncased' in hf_tag.lower():
+        warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
+        logging.info("cuda not available, setting var TRAIN_FP16 to False.")
+        train_fp16 = False
+    if "uncased" in hf_tag.lower():
         warnings.warn(f"setting lowercased_text to True for {hf_tag}")
         lowercased_text = True
 
@@ -252,7 +259,9 @@ if __name__ == "__main__":
     logging.info(f"\n\nParameters for a new session:\n\t{pp.pformat(session_params)}")
     # load data from appropriate dataset depending on 'lowercased_text'
     src_data_dir = (
-        _root / "data" / "processed" if lowercased_text else _root / "data" / "interim"
+        _root / "data" / "processed" / "basic_processed"
+        if lowercased_text
+        else _root / "data" / "interim"
     )
     datafile_mapping = get_pubmed_filenames(
         data_dir=src_data_dir, dataset=dataset, verbose=verbose
@@ -314,7 +323,7 @@ if __name__ == "__main__":
     )
 
     logging.info(f"starting training of model {hf_tag}")
-    if use_knockknock:
+    if use_knockknock and kk_available:
         logging.info("using knockknock to notify when training is complete")
         train_with_knockknock = get_knockknock_notifier(
             trainer=trainer,

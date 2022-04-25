@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 import torch
-from knockknock import telegram_sender
 from pytorch_lightning.callbacks import (
     EarlyStopping,
     GPUStatsMonitor,
@@ -180,6 +179,8 @@ def get_knockknock_notifier(
     Returns:
         knockknock.telegram_sender.TelegramSender: object for sending telegram messages
     """
+    from knockknock import telegram_sender
+
     BOT_API: str = os.environ.get(api_key)
     CHAT_ID: int = os.environ.get(chat_id)
 
