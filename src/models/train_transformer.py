@@ -31,20 +31,11 @@ from trf_text import (
     save_train_metadata,
     get_knockknock_notifier,
 )
-
-try:
-    from trf_text import get_knockknock_notifier
-    kk_available = True
-except ImportError:
-    kk_available =  False
-
 _src = Path(__file__).parent.parent
 _root = _src.parent
 _logs_dir = _root / "logs"
 _logs_dir.mkdir(exist_ok=True)
 sys.path.append(str(_root.resolve()))
-
-from src.utils import get_timestamp
 
 logfile_path = _logs_dir / "train_transformer.log"
 logging.basicConfig(
@@ -53,6 +44,17 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
 )
+
+
+try:
+    from trf_text import get_knockknock_notifier
+    kk_available = True
+except ImportError:
+    kk_available =  False
+
+
+
+from src.utils import get_timestamp
 
 
 def predict_test_example():
