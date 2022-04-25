@@ -73,4 +73,3 @@ def collapse_directory(directory: str or Path, verbose=False, ignore_errors=True
 
     if verbose:
         print(f"{directory.resolve()} is now reset to top level directory")
-

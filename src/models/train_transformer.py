@@ -26,9 +26,14 @@ import torch
 from flash.text import TextClassificationData, TextClassifier
 from pytorch_lightning import seed_everything
 
-from trf_text import (get_LR_scheduler_config, get_pubmed_filenames,
-                      get_tb_logger, get_training_callbacks,
-                      load_metrics_train, save_train_metadata)
+from trf_text import (
+    get_LR_scheduler_config,
+    get_pubmed_filenames,
+    get_tb_logger,
+    get_training_callbacks,
+    load_metrics_train,
+    save_train_metadata,
+)
 
 _src = Path(__file__).parent.parent
 _root = _src.parent
@@ -45,7 +50,6 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
 )
-
 
 
 def predict_test_example():
@@ -68,12 +72,15 @@ def predict_test_example():
     print(f"\nYtrue:\t{sample_ytrue}\nYpred:\t{predictions}")
 
 
-
 def get_parser():
     """
     get_parser - a helper function for the argparse module
     """
-    parser = argparse.ArgumentParser(description="Train a transformer model on the data to classify the text.")
+    parser = argparse.ArgumentParser(
+        description="Train a transformer model on the data to classify the text."
+    )
+
+
 if __name__ == "__main__":
 
     logging.info("starting new training session")
@@ -94,14 +101,13 @@ if __name__ == "__main__":
 
     UNFREEZE_EPOCH = 4  # @param {type:"integer"}
     VERBOSE = False  # @param {type:"boolean"}
-    hf_tag = "bert-base-uncased" # @param ["bert-base-uncased", "bert-large-uncased", "bert-base-cased", "bert-large-cased"]
+    hf_tag = "bert-base-uncased"  # @param ["bert-base-uncased", "bert-large-uncased", "bert-base-cased", "bert-large-cased"]
     dataset = "pubmed_full"
     input_text_colname = "description_cln"
     target_cls_colname = "target"
     if not torch.cuda.is_available():
         print("cuda not available, setting var TRAIN_FP16 to False.")
         TRAIN_FP16 = False
-
 
     if TRAIN_STRATEGY == "freeze_unfreeze":
         assert (
@@ -122,12 +128,9 @@ if __name__ == "__main__":
     }
     logging.info(f"\n\nParameters for a new session:\n\t{session_params}")
 
-
-
     session_params["dataset"] = dataset  # log
 
     datafile_mapping = get_pubmed_filenames(dataset, _root)
-
 
     session_params["input_text_colname"] = input_text_colname
     session_params["target_cls_colname"] = target_cls_colname
@@ -152,7 +155,6 @@ if __name__ == "__main__":
     )
 
     logger.log_hyperparams(session_params)
-
 
     lr_scheduler_config = get_LR_scheduler_config()
     logging.info(f"lr_scheduler_config={lr_scheduler_config}")
@@ -206,7 +208,7 @@ if __name__ == "__main__":
         datamodule=datamodule,
     )
 
-    predict_test_example() # illustrate how to use predict() and what the results look like
+    predict_test_example()  # illustrate how to use predict() and what the results look like
 
     final_metrics = trainer.logged_metrics
     output_metrics = {k: v.cpu().numpy().tolist() for k, v in final_metrics.items()}
@@ -223,11 +225,14 @@ if __name__ == "__main__":
     session_dir = out_dir / f"{dataset}={m_name}_{get_timestamp()}"
     session_dir.mkdir(exist_ok=True)
 
-    model_out_path = session_dir /  f"textclassifer_{m_name}_{dataset}.pt"
+    model_out_path = session_dir / f"textclassifer_{m_name}_{dataset}.pt"
     trainer.save_checkpoint(model_out_path.resolve())
 
-
-    save_train_metadata(session_dir=session_dir, session_params=session_params, output_metrics=output_metrics)
+    save_train_metadata(
+        session_dir=session_dir,
+        session_params=session_params,
+        output_metrics=output_metrics,
+    )
     shutil.copyfile(logfile_path, session_dir / "training_transformers.log")
 
     print("Finished training")

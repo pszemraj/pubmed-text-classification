@@ -13,6 +13,7 @@ from pytorch_lightning.callbacks import (
     StochasticWeightAveraging,
 )
 
+
 def get_training_callbacks(monitor_metric="val_f1score", min_delta=0.003, patience=3):
     """
     get_training_callbacks - returns a list of callbacks for use with PyTorch Lightning-Flash trainer.
@@ -38,7 +39,8 @@ def get_training_callbacks(monitor_metric="val_f1score", min_delta=0.003, patien
     ]
     return _callbacks
 
-def get_pubmed_filenames(dataset:str or Path, data_dir:str or Path, verbose=False):
+
+def get_pubmed_filenames(dataset: str or Path, data_dir: str or Path, verbose=False):
     data_dir = Path(data_dir)
     if dataset == "pubmed_20k":
         datafile_mapping = {
@@ -57,6 +59,7 @@ def get_pubmed_filenames(dataset:str or Path, data_dir:str or Path, verbose=Fals
         print(f"datafile_mapping: {datafile_mapping}")
     return datafile_mapping
 
+
 def load_metrics_train(num_classes: int, verbose=False):
     """
     load_metrics_train - returns a dict of metrics for use with PyTorch Lightning-Flash trainer.
@@ -69,8 +72,12 @@ def load_metrics_train(num_classes: int, verbose=False):
         dict: dict of metrics for use with PyTorch Lightning-Flash trainer (torchmetrics)
     """
 
-    acc = Accuracy(num_classes=num_classes, average="weighted" if num_classes > 2 else "macro")
-    f1 = F1Score(num_classes=num_classes, average="weighted" if num_classes > 2 else "macro")
+    acc = Accuracy(
+        num_classes=num_classes, average="weighted" if num_classes > 2 else "macro"
+    )
+    f1 = F1Score(
+        num_classes=num_classes, average="weighted" if num_classes > 2 else "macro"
+    )
     mcc = MatthewsCorrCoef(
         num_classes=num_classes,
     )
@@ -82,7 +89,13 @@ def load_metrics_train(num_classes: int, verbose=False):
     return _metrics
 
 
-def get_tb_logger(log_dir: str or Path, dataset: str, TRAIN_STRATEGY:str, model_tag:str, verbose=False):
+def get_tb_logger(
+    log_dir: str or Path,
+    dataset: str,
+    TRAIN_STRATEGY: str,
+    model_tag: str,
+    verbose=False,
+):
     """
     get_logger - returns a TensorBoardLogger object for use with PyTorch Lightning-Flash trainer.
 
@@ -99,7 +112,7 @@ def get_tb_logger(log_dir: str or Path, dataset: str, TRAIN_STRATEGY:str, model_
     _session_log = log_dir / f"logs_{dataset}_{TRAIN_STRATEGY}"
     _session_log.mkdir(exist_ok=True)
 
-    MODEL_BACKBONE = model_tag.split("/")[        -1    ]
+    MODEL_BACKBONE = model_tag.split("/")[-1]
     MODEL_BACKBONE = MODEL_BACKBONE[:30]  # max 30 chars
     logger = TensorBoardLogger(
         save_dir=_session_log, name=f"txtcls_{dataset}_{MODEL_BACKBONE}"
@@ -108,7 +121,10 @@ def get_tb_logger(log_dir: str or Path, dataset: str, TRAIN_STRATEGY:str, model_
         print(f"logs will be saved to: {_session_log}")
     return logger
 
-def get_LR_scheduler_config(metric_name: str="val_f1score", interval="epoch", verbose=False):
+
+def get_LR_scheduler_config(
+    metric_name: str = "val_f1score", interval="epoch", verbose=False
+):
     lr_scheduler_config = {
         # REQUIRED: The scheduler instance
         # The unit of the scheduler's step size, could also be 'step'.
@@ -136,6 +152,7 @@ def get_LR_scheduler_config(metric_name: str="val_f1score", interval="epoch", ve
     if verbose:
         print(f"lr_scheduler_config: {lr_scheduler_config}")
     return lr_scheduler_config
+
 
 def get_knockknock_notifier(
     trainer,
@@ -192,7 +209,7 @@ def get_knockknock_notifier(
     return knockknock_test_wrap
 
 
-def save_train_metadata(session_dir:Path, output_metrics:dict, session_params:dict):
+def save_train_metadata(session_dir: Path, output_metrics: dict, session_params: dict):
     """
     save_train_metadata - saves training metadata to a json file
 
