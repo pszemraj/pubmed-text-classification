@@ -38,6 +38,10 @@ The environment.yml will create an environment called `ml4hc_p2`, to activate th
 conda activate ml4hc_p2
 ```
 
+## Dataset
+
+Re-create the dataset by running `src/data/make_dataset.py`. Additional details are provided in the README.md file in the data folder.
+
 ## Project Organization
 
 ------------
