@@ -59,7 +59,13 @@ def collapse_directory(directory: str or Path, verbose=False, ignore_errors=True
     directory = Path(directory)
     for f in directory.rglob("*"):
         if f.is_file():
-            shutil.move(str(f), str(directory))
+            try:
+                shutil.move(str(f), str(directory))
+            except shutil.Error:
+                if verbose:
+                    print(f"Error moving {f} to {directory}")
+                if not ignore_errors:
+                    raise
 
     # count the number of files in the new top level directory
     num_files = len(list(directory.rglob("*")))
