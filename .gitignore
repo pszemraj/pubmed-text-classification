@@ -97,3 +97,6 @@ target/
 # ignore notebooks by default
 .ipynb_checkpoints/
 *notebooks/
+
+# log files
+*.log
