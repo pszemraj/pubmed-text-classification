@@ -106,7 +106,7 @@ def get_parser():
         "--train-strategy",
         type=str,
         default="freeze",
-        help="Training strategy for the model. Can be any of freeze, freeze_unfreeze, no_freeze, full_train"
+        help="Training strategy for the model. Can be any of freeze, freeze_unfreeze, no_freeze, full_train",
     )
     parser.add_argument(
         "--LR-initial",
@@ -175,20 +175,19 @@ if __name__ == "__main__":
     dataset = args.dataset
     input_text_colname = args.input_text_colname
     target_cls_colname = args.target_cls_colname
-    max_len = args.max_len # max length of the input text (for BERT / XLNet / others)
+    max_len = args.max_len  # max length of the input text (for BERT / XLNet / others)
 
     hf_tag = args.hf_tag
 
     num_epochs = args.num_epochs
     batch_size = args.batch_size
     train_fp16 = args.train_fp16
-    train_strategy =args.train_strategy
+    train_strategy = args.train_strategy
     LR_initial = args.LR_initial
     LR_schedule = args.LR_schedule
     weight_decay = args.weight_decay
     unfreeze_epoch = args.unfreeze_epoch
     verbose = args.verbose
-
 
     if not torch.cuda.is_available():
         warnings.warn("cuda not available, setting var TRAIN_FP16 to False.")
@@ -217,7 +216,6 @@ if __name__ == "__main__":
         "verbose": verbose,
     }
     logging.info(f"\n\nParameters for a new session:\n\t{pp.pformat(session_params)}")
-
 
     datafile_mapping = get_pubmed_filenames(dataset, _root)
 
