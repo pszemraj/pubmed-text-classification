@@ -1,25 +1,42 @@
 # -*- coding: utf-8 -*-
+"""
+    make_dataset.py - processes the txt files in the input directory and saves them to the output directory as csv files. This script should be run on data in the 'raw' directory.
+
+"""
 import argparse
 import logging
-from pathlib import Path
-from tqdm.auto import tqdm
-from cleantext import clean
+import shutil
 import sys
+from pathlib import Path
+
 import pandas as pd
+import py7zr
+from cleantext import clean
+from tqdm.auto import tqdm
 
 _src = Path(__file__).parent.parent
 _root = _src.parent
+_logs_dir = _root / "logs"
+_logs_dir.mkdir(exist_ok=True)
 sys.path.append(str(_root.resolve()))
-from src.utils import fix_punct_spaces
-
-_src = Path(__file__).parent.parent
-_root = _src.parent
+from src.utils import collapse_directory, fix_punct_spaces
 
 
 def process_txt_data(
     txt_datadir: str or Path, out_dir: str or Path, lowercase=True, verbose=False
 ):
-    """read each downloaded txt file into pandas, convert to a dataframe, and save as a CSV"""
+    """
+    process_txt_data - processes the txt files in the input directory and saves them to the output directory as csv files
+
+    Args:
+        txt_datadir (str or Path): the path to the directory containing the txt files
+        out_dir (str or Path): the path to the directory to save the csv files
+        lowercase (bool, optional): Defaults to True. If passed, will lowercase the input text
+        verbose (bool, optional): Defaults to False. If passed, will print out the paths to the output files
+
+    Returns:
+        list: a list of the paths to the output csv files
+    """
     txt_datadir = Path(txt_datadir)
     out_dir = Path(out_dir) if out_dir is not None else txt_datadir / "processed"
     out_dir.mkdir(exist_ok=True)
@@ -57,21 +74,64 @@ def process_txt_data(
 def main(
     input_path, output_path, lowercase=False, process_zip_file=False, verbose=False
 ):
-    """Runs data processing scripts to turn raw data from (../raw) into
-    cleaned data ready to be analyzed (saved in ../processed).
+    """
+    main - the main function for the script
+
+    Args:
+        input_path (str or Path): the path to the input data directory
+        output_path (str or Path): the path to the output data directory
+        lowercase (bool, optional): Defaults to False. If passed, will lowercase the input text
+        process_zip_file (bool, optional): Defaults to False. If passed, will also parse the zip files in the input path
+        verbose (bool, optional): Defaults to False. If passed, will print out the paths to the output files
+
+    Returns:
+        list: a list of the paths to the output csv files
     """
     logger = logging.getLogger(__name__)
-    logger.info("making final data set from raw data")
+    logger.info("making data set from raw data")
+    input_path = Path(input_path)
+    output_path = Path(output_path)
+    if process_zip_file:
+        zipfiles = [
+            f for f in input_path.iterdir() if f.is_file() and f.suffix == ".7z"
+        ]
+        logger.info(f"extracting zip files.. found {len(zipfiles)} zip files")
+        temp_dir = input_path / "temp_7z_dir"
+        for f in tqdm(zipfiles, total=len(zipfiles)):
+            with py7zr.SevenZipFile(f, "r") as z:
+                z.extractall(path=temp_dir)
+        collapse_directory(temp_dir)
+    # extract standard txt files
     csv_paths = process_txt_data(
         txt_datadir=input_path,
         out_dir=output_path,
         lowercase=lowercase,
         verbose=verbose,
     )
+    if process_zip_file:
+        _input_dir_count = len(csv_paths)
+        logger.info(f"processed {_input_dir_count} files in input_path")
+        # extract text files from zip files
+        logger.info(f"extracting zip files in {temp_dir.resolve()}")
+        csv_paths += process_txt_data(
+            txt_datadir=temp_dir,
+            out_dir=output_path,
+            lowercase=lowercase,
+            verbose=verbose,
+        )
+        zip_count = len(csv_paths) - _input_dir_count
+        logger.info(f"processed {zip_count} files in temp_dir")
+
+        # remove temp dir
+        logger.info(f"removing temp dir {temp_dir.resolve()}")
+        shutil.rmtree(temp_dir, ignore_errors=True)
+    logger.info(f"returning {len(csv_paths)} csv files")
     if verbose:
         print(
             f"processed and saved:\n\t{[f.name for f in csv_paths]} in directory {output_path}"
         )
+
+    return csv_paths
 
 
 def get_parser():
@@ -126,7 +186,9 @@ def get_parser():
 
 if __name__ == "__main__":
     log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    logging.basicConfig(level=logging.INFO, format=log_fmt)
+    logging.basicConfig(
+        level=logging.INFO, format=log_fmt, filename=_logs_dir / "make_dataset.log"
+    )
 
     args = get_parser().parse_args()
     logger = logging.info(f"parsed args: {args}")
@@ -139,7 +201,7 @@ if __name__ == "__main__":
     process_zip_file = args.process_zip_file
     lowercase = args.lowercase
     verbose = args.verbose
-    main(
+    _ = main(
         input_path=input_dir,
         output_path=output_dir,
         lowercase=lowercase,

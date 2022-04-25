@@ -5,3 +5,4 @@ tqdm
 lightning-flash[text]
 torchmetrics==0.7.3
 gensim
+py7zr
