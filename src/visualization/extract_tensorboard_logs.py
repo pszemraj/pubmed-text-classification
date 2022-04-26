@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 
 def get_timestamp():
     # return current date and time as as string
-    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    return datetime.now().strftime("%Y-%m-%d_%H-%M")
 
 
 def convert_tfevent(filepath, log_examples=False):
@@ -96,11 +96,14 @@ def convert_tb_data(root_dir, sort_by="step"):
                 logging.warning(f"unable to convert the event, error is: {e}")
 
     # Concatenate (and sort) all partial individual dataframes
-    all_df = pd.concat(out)[columns_order]
-    if sort_by is not None:
-        all_df = all_df.sort_values(sort_by)
+    if out:
+        df = pd.concat(out)
+        if sort_by:
+            df.sort_values(by=sort_by, inplace=True)
+        return df[columns_order]
+    else:
 
-    return all_df.reset_index(drop=True)
+        return pd.DataFrame()
 
 
 def get_parser():
@@ -150,8 +153,10 @@ if __name__ == "__main__":
     overall_df = pd.DataFrame()
     for logdir in tqdm(logdirs, total=len(logdirs)):
         df = convert_tb_data(logdir).convert_dtypes()
-        overall_df = pd.concat([overall_df, df], axis=0)
-
+        if len(df) > 0:
+            overall_df = pd.concat([overall_df, df], sort=True)
+        else:
+            logging.warning(f"no data found in {logdir.name}")
     overall_df.reset_index(drop=True, inplace=True)
     pre_len = overall_df.shape[0]
     overall_df.dropna(inplace=True)
