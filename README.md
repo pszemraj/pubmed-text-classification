@@ -42,6 +42,11 @@ conda activate ml4hc_p2
 
 Re-create the dataset by running `src/data/make_dataset.py`. Additional details are provided in the README.md file in the data folder.
 
+
+## Model files
+
+Due to file size constraints some fine-tuned models will be available at the following huggingface page: [ml4pubmed](https://huggingface.co/ml4pubmed)
+
 ## Project Organization
 
 ------------
