@@ -42,7 +42,15 @@ conda activate ml4hc_p2
 
 Re-create the dataset by running `src/data/make_dataset.py`. Additional details are provided in the README.md file in the data folder.
 
+## Results
 
+### Transformer Model
+
+Our findings after training a variety of transformer models on the dataset are shown below. Overall, the transformer model performs the best on the dataset. With respect to "hyperparameters", we found that the appropriate choice of a pretrained model was more important than any other, including unfreezing layers other than the classification head.
+
+A high-level interactive EDA of our results on the test set for various models can be found at [this link](<https://pubmed-ml4hc-transformers.netlify.app/)
+
+```
 ## Model files
 
 Due to file size constraints some fine-tuned models will be available at the following huggingface page: [ml4pubmed](https://huggingface.co/ml4pubmed)
