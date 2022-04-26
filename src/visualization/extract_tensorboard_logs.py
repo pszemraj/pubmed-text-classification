@@ -15,36 +15,44 @@ from datetime import datetime
 _root_dir = Path(__file__).parent.parent.parent
 logging.basicConfig(level=logging.INFO)
 
+
 def get_timestamp():
     # return current date and time as as string
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
 
 def convert_tfevent(filepath, log_examples=False):
 
     _f = Path(filepath)
 
-    _df =  pd.DataFrame([
-        parse_tfevent(e, log_examples) for e in summary_iterator(filepath) if len(e.summary.value)
-    ])
+    _df = pd.DataFrame(
+        [
+            parse_tfevent(e, log_examples)
+            for e in summary_iterator(filepath)
+            if len(e.summary.value)
+        ]
+    )
 
-    _df['version'] = _f.parent.name
-    _df['model'] = _f.parent.parent.name
-    _df['dataset'] = str(_f.parent.parent.parent.name).replace("logs_","")
+    _df["version"] = _f.parent.name
+    _df["model"] = _f.parent.parent.name
+    _df["dataset"] = str(_f.parent.parent.parent.name).replace("logs_", "")
 
     return _df
 
+
 def parse_tfevent(tfevent, log_examples=False):
     event_data = dict(
-                    wall_time=tfevent.wall_time,
-                    name=tfevent.summary.value[0].tag,
-                    step=tfevent.step,
-                    value=float(tfevent.summary.value[0].simple_value),
-                )
+        wall_time=tfevent.wall_time,
+        name=tfevent.summary.value[0].tag,
+        step=tfevent.step,
+        value=float(tfevent.summary.value[0].simple_value),
+    )
     if log_examples:
         logging.info(f"\n\nEvent data for example:\n\t{pp.pformat(event_data)}")
         logging.info(f"other fields:\t{pp.pformat(dir(tfevent))}")
 
     return event_data
+
 
 def convert_tb_data(root_dir, sort_by="step"):
     """Convert local TensorBoard data into Pandas DataFrame.
@@ -67,7 +75,15 @@ def convert_tb_data(root_dir, sort_by="step"):
 
     """
 
-    columns_order = ['dataset', 'model', 'version', 'wall_time', 'name', 'step', 'value']
+    columns_order = [
+        "dataset",
+        "model",
+        "version",
+        "wall_time",
+        "name",
+        "step",
+        "value",
+    ]
     out = []
     for (root, _, filenames) in tqdm(os.walk(root_dir)):
         for filename in filenames:
@@ -85,7 +101,6 @@ def convert_tb_data(root_dir, sort_by="step"):
         all_df = all_df.sort_values(sort_by)
 
     return all_df.reset_index(drop=True)
-
 
 
 def get_parser():
@@ -116,12 +131,17 @@ def get_parser():
     )
     return parser
 
+
 if __name__ == "__main__":
     args = get_parser().parse_args()
     verbose = args.verbose
     logging.info(f"converting tensorboard logs from {args.input_path}")
     input_path = Path(args.input_path)
-    output_path = Path(args.output_path) if args.output_path is not None else _root_dir / 'reports' / 'converted_tensorboard_logs'
+    output_path = (
+        Path(args.output_path)
+        if args.output_path is not None
+        else _root_dir / "reports" / "converted_tensorboard_logs"
+    )
     output_path.mkdir(exist_ok=True, parents=True)
 
     logdirs = [d for d in input_path.iterdir() if d.is_dir() and "logs_" in d.stem]
@@ -138,12 +158,20 @@ if __name__ == "__main__":
     logging.info(f"dropped {pre_len - overall_df.shape[0]} rows with NaN values")
     if verbose:
         logging.info(f"overall_df:\n{overall_df.info()}")
-    gpu_stuff = [n for n in overall_df.name.unique() if "device_id:" in n or "gpu_id:" in n]
-    misc_useless = ['hp_metric',         '_hparams_/experiment',
-    '_hparams_/session_start_info',   '_hparams_/session_end_info',]
+    gpu_stuff = [
+        n for n in overall_df.name.unique() if "device_id:" in n or "gpu_id:" in n
+    ]
+    misc_useless = [
+        "hp_metric",
+        "_hparams_/experiment",
+        "_hparams_/session_start_info",
+        "_hparams_/session_end_info",
+    ]
     gpu_stuff.extend(misc_useless)
     df_cln = overall_df.drop(overall_df[overall_df.name.isin(gpu_stuff)].index)
     logging.info(f"dropped {overall_df.shape[0] - df_cln.shape[0]} rows with gpu stuff")
     df_cln.to_csv(output_path / f"tensorboard_logs{get_timestamp()}.csv", index=False)
-    df_cln.to_excel(output_path / f"tensorboard_logs{get_timestamp()}.xlsx", index=False)
+    df_cln.to_excel(
+        output_path / f"tensorboard_logs{get_timestamp()}.xlsx", index=False
+    )
     logging.info(f"saved to {output_path} with the length of {df_cln.shape[0]} rows")
