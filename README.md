@@ -48,6 +48,8 @@ Re-create the dataset by running `src/data/make_dataset.py`. Additional details 
 
 Our findings after training a variety of transformer models on the dataset are shown below. Overall, the transformer model performs the best on the dataset. With respect to "hyperparameters", we found that the appropriate choice of a pretrained model was more important than any other, including unfreezing layers other than the classification head.
 
+![feature_importance_Apr-26-2022_t-20](https://user-images.githubusercontent.com/74869040/165403047-7804b7bc-b587-4658-ae27-d57d058b390b.png)
+
 A high-level interactive EDA of our results on the test set for various models can be found at [this link](<https://pubmed-ml4hc-transformers.netlify.app/)
 
 ```
